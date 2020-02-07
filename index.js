@@ -72,25 +72,29 @@ app.post('/api/persons', (req, res) => {
     return res.status(400).json({
       error: 'name missing'
     })
-  } else if (!body.number) {
+  } 
+  
+  if (!body.number) {
     return res.status(400).json({
       error: 'number missing'
     })
-  } else if (persons.map(p => p.name).includes(body.name)) {
+  }
+
+  if (persons.map(p => p.name).includes(body.name)) {
     return res.status(400).json({
       error: 'person is already in phonebook'
     })
   }
 
-  const person = {
+  const person = new Person({
     name: body.name,
     number: body.number,
-    id: generateId(),
-  }
+    //id: generateId(),
+  })
 
-  persons = persons.concat(person)
-
-  res.json(person)
+  person.save().then(savedPerson => {
+    res.json(savedPerson.toJSON())
+  })
 })
 
 app.delete('/api/persons/:id', (req, res) => {
