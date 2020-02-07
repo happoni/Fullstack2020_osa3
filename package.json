@@ -4,6 +4,10 @@
   "description": "tehtävä 3.1",
   "main": "index.js",
   "scripts": {
+    "build:ui": "rm -rf build && cd ../Fullstack/osa2/puhelinluettelo/ && npm run build --prod && cp -r build cd ../../../Fullstack_osa3/",
+    "deploy": "git push heroku master",
+    "deploy full": "npm run build:ui && git add . && git commit -m uibuild && git push && npm run deploy",
+    "logs:prod": "npx heroku-cli logs --tail",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \\\"Error: no test specified\\\" && exit 1"
