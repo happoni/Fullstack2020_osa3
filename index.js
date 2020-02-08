@@ -1,9 +1,10 @@
 const express = require('express')
+const cors = require('cors')
 const app = express()
 const morgan = require('morgan')
 require('dotenv').config()
 const Person = require('./models/person')
-const cors = require('cors')
+
 
 // Morgan-toteutus, ei kaunein
 morgan.token('info', function (req, res) {
@@ -41,27 +42,30 @@ let persons = [
 ]
  */
 
-app.get('/info', (req, res) => {
-  res.send(`<p>Phonebook has ${persons.length} persons' info.</p>
-  <br></br>
-  <p>${new Date()}</p>`)
+app.get('/info', (req, res, next) => {
+  const persons = Person.find({}).then(people => {
+    res.send(`<p>Phonebook has ${people.length} persons.</p>
+    <p>${new Date()}</p>`)
+  })
 })
 
-app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const person = persons.find(person => person.id === id)
-  if (person) {
-    res.json(person)
-  } else {
-    res.status(404).end()
-  }
+// Yksittäisen henkilön JSON-data
+// Jotain ongelmia CSP:n kanssa. Favicon.ico:n lataaminen ei onnistu...
+app.get('/api/persons/:id', (req, res, next) => {  
+  Person.findById(req.params.id).then(person => {
+      //console.log(person)
+      res.json(person.toJSON())
+    })
+    .catch(error => error(next))  
 })
 
 // Kaikkien henkilöiden haku
-app.get('/api/persons', (req, res) => {
+// Jotain ongelmia CSP:n kanssa. Favicon.ico:n lataaminen ei onnistu...
+app.get('/api/persons', (req, res, next) => {
   Person.find({}).then(people => {
     res.json(people.map(person => person.toJSON()))
   })
+  .catch(error => error(next))
 })
 
 // Random id:n generaattorille ei ole enää käyttöä...
@@ -69,7 +73,7 @@ app.get('/api/persons', (req, res) => {
 //  return Math.ceil(Math.random() * 1000)
 //}
 
-// Uuden henkilön lisäys. Frontend ei osaa antaa virheviestiä puuttuvista parametreista...
+// Uuden henkilön lisäys.
 app.post('/api/persons', (req, res) => {
   const body = req.body
 
@@ -82,12 +86,6 @@ app.post('/api/persons', (req, res) => {
   if (!body.number) {
     return res.status(400).json({
       error: 'number missing'
-    })
-  }
-
-  if (persons.map(p => p.name).includes(body.name)) {
-    return res.status(400).json({
-      error: 'person is already in phonebook'
     })
   }
 
