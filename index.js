@@ -56,7 +56,7 @@ app.get('/api/persons/:id', (req, res, next) => {
       //console.log(person)
       res.json(person.toJSON())
     })
-    .catch(error => error(next))  
+    .catch(error => next(error))  
 })
 
 // Kaikkien henkilöiden haku
@@ -65,7 +65,7 @@ app.get('/api/persons', (req, res, next) => {
   Person.find({}).then(people => {
     res.json(people.map(person => person.toJSON()))
   })
-  .catch(error => error(next))
+  .catch(error => next(error))
 })
 
 // Random id:n generaattorille ei ole enää käyttöä...
@@ -74,7 +74,7 @@ app.get('/api/persons', (req, res, next) => {
 //}
 
 // Uuden henkilön lisäys.
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body
 
   if (!body.name) {
@@ -95,9 +95,11 @@ app.post('/api/persons', (req, res) => {
     //id: generateId(),
   })
 
-  person.save().then(savedPerson => {
-    res.json(savedPerson.toJSON())
+  person.save()
+    .then(savedPerson => {
+      res.json(savedPerson.toJSON())
   })
+    .catch(error => next(error))
 })
 
 // Henkilön poisto
@@ -137,6 +139,8 @@ const errorHandler = (error, req, res, next) => {
 
   if (error.name === 'CastError' && error.kind == 'ObjectId') {
     return res.status(400).send({ error: 'malformattedi id'})
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
   }
   next(error)
 }
