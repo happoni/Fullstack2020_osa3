@@ -9,14 +9,14 @@ const password = process.argv[2]
 const name = process.argv[3]
 const number = process.argv[4]
 
-const url = 
+const url =
 `mongodb+srv://Deemus:${password}@cluster0-hhcde.mongodb.net/phonebook?retryWrites=true&w=majority`
 
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 
 const personSchema = new mongoose.Schema({
   name: String,
-  number: String,  
+  number: String,
 })
 
 const Person = mongoose.model('Person', personSchema)

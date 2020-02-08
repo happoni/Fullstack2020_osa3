@@ -17,61 +17,28 @@ app.use(express.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :info'))
 app.use(express.static('build'))
 
-/* Ei tarvita enää kovakoodattua 'tietokantaa'...
-let persons = [
-  {
-    name: "Arto Hellas",
-    number: "040-123456",
-    id: 1
-  },
-  {
-    name: "Ada Lovelace",
-    number: "39-44-53212331",
-    id: 2
-  },
-  {
-    name: "Dan Abramov",
-    number: "12-43-234345",
-    id: 3
-  },
-  {
-    name: "Mary Poppendieck",
-    number: "39-23-4244213",
-    id: 4
-  }
-]
- */
-
 app.get('/info', (req, res, next) => {
-  const persons = Person.find({}).then(people => {
+  Person.find({}).then(people => {
     res.send(`<p>Phonebook has ${people.length} persons.</p>
     <p>${new Date()}</p>`)
   })
 })
 
 // Yksittäisen henkilön JSON-data
-// Jotain ongelmia CSP:n kanssa. Favicon.ico:n lataaminen ei onnistu...
-app.get('/api/persons/:id', (req, res, next) => {  
+app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id).then(person => {
-      //console.log(person)
-      res.json(person.toJSON())
-    })
-    .catch(error => next(error))  
+    res.json(person.toJSON())
+  })
+    .catch(error => next(error))
 })
 
 // Kaikkien henkilöiden haku
-// Jotain ongelmia CSP:n kanssa. Favicon.ico:n lataaminen ei onnistu...
 app.get('/api/persons', (req, res, next) => {
   Person.find({}).then(people => {
     res.json(people.map(person => person.toJSON()))
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
-
-// Random id:n generaattorille ei ole enää käyttöä...
-//const generateId = () => {
-//  return Math.ceil(Math.random() * 1000)
-//}
 
 // Uuden henkilön lisäys.
 app.post('/api/persons', (req, res, next) => {
@@ -81,8 +48,8 @@ app.post('/api/persons', (req, res, next) => {
     return res.status(400).json({
       error: 'name missing'
     })
-  } 
-  
+  }
+
   if (!body.number) {
     return res.status(400).json({
       error: 'number missing'
@@ -92,13 +59,12 @@ app.post('/api/persons', (req, res, next) => {
   const person = new Person({
     name: body.name,
     number: body.number,
-    //id: generateId(),
   })
 
   person.save()
     .then(savedPerson => {
       res.json(savedPerson.toJSON())
-  })
+    })
     .catch(error => next(error))
 })
 
@@ -120,7 +86,7 @@ app.put('/api/persons/:id', (req, res, next) => {
     number: body.number,
   }
 
-  Person.findByIdAndUpdate(req.params.id, person, { new: true})
+  Person.findByIdAndUpdate(req.params.id, person, { new: true })
     .then(updatedPerson => {
       res.json(updatedPerson.toJSON())
     })
@@ -137,8 +103,8 @@ app.use(unknownEndpoint)
 const errorHandler = (error, req, res, next) => {
   console.error(error.message)
 
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
-    return res.status(400).send({ error: 'malformattedi id'})
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
+    return res.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return res.status(400).json({ error: error.message })
   }
@@ -148,7 +114,6 @@ const errorHandler = (error, req, res, next) => {
 app.use(errorHandler)
 
 // Port ja 'käynnistys'
-
 const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
